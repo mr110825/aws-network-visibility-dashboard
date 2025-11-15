@@ -29,15 +29,37 @@ AWSインフラの運用効率を向上させるツールを目指す。
 
 ## 🛠 技術スタック（予定）
 
-- **AWS Services**: VPC Flow Logs, CloudWatch, Lambda, S3, Athena, QuickSight
-- **IaC**: Terraform
-- **Language**: Python (Lambda functions)
-- **Network**: VPC, Transit Gateway, Security Group analysis
+### 監視対象（幅広さ）
+- **VPC**: Virtual Private Cloud, Subnets, Route Tables, NAT Gateway
+- **EC2**: Webサーバー（Nginx）
+- **ALB**: Application Load Balancer
+- **RDS**: (オプション、予算次第で省略可)
+
+### 監視基盤（専門性）
+- **VPC Flow Logs**: トラフィック収集
+- **S3**: ログ保存
+- **Athena**: ログ分析（SQLクエリ）
+- **QuickSight**: 可視化ダッシュボード
+- **CloudWatch**: アラート・監視
+- **Lambda**: ログ分析自動化（Python）
+
+### IaC
+- **Terraform**: 全インフラのコード化
 
 ## 🎯 実装予定機能
 
-- [ ] VPC Flow LogsのS3保存とAthenaクエリ環境構築
+### フェーズ1: Webアプリケーション環境構築
+- [ ] VPC/サブネット/ルートテーブル構築
+- [ ] EC2インスタンス構築（Nginx Webサーバー）
+- [ ] ALB（Application Load Balancer）構築
+- [ ] セキュリティグループ設計
+
+### フェーズ2: 監視基盤構築
+- [ ] VPC Flow LogsのS3保存設定
+- [ ] Athenaクエリ環境構築（トラフィック分析）
 - [ ] Lambda関数によるログ分析自動化
+
+### フェーズ3: 可視化・アラート
 - [ ] QuickSightダッシュボードでのトラフィック可視化
 - [ ] 異常トラフィック検知とCloudWatch Alarms連携
 - [ ] Security Group設定の可視化と不要ルール検出
@@ -52,7 +74,10 @@ AWSインフラの運用効率を向上させるツールを目指す。
 
 ```
 aws-network-visibility-dashboard/
-├── terraform/           # Terraformインフラコード
+├── terraform/
+│   ├── network/         # VPC, Subnets, Route Tables, NAT Gateway
+│   ├── compute/         # EC2, ALB, Security Groups
+│   └── monitoring/      # VPC Flow Logs, S3, Athena, QuickSight, CloudWatch
 ├── lambda/              # Lambda関数（Python）
 ├── docs/                # ドキュメント・アーキテクチャ図
 └── README.md
