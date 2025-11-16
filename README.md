@@ -1,6 +1,6 @@
 # AWS Network Visibility Dashboard
 
-**ステータス**: 🚧 準備中（2025年11月〜開発予定）
+**ステータス**: 🚧 開発中（2025年11月〜 Week 0-1: VPC基盤完了）
 
 ## 👤 About / このプロジェクトについて
 
@@ -49,7 +49,7 @@ AWSインフラの運用効率を向上させるツールを目指す。
 ## 🎯 実装予定機能
 
 ### フェーズ1: Webアプリケーション環境構築
-- [ ] VPC/サブネット/ルートテーブル構築
+- [x] VPC/サブネット/ルートテーブル構築
 - [ ] EC2インスタンス構築（Nginx Webサーバー）
 - [ ] ALB（Application Load Balancer）構築
 - [ ] セキュリティグループ設計
@@ -75,12 +75,62 @@ AWSインフラの運用効率を向上させるツールを目指す。
 ```
 aws-network-visibility-dashboard/
 ├── terraform/
-│   ├── network/         # VPC, Subnets, Route Tables, NAT Gateway
-│   ├── compute/         # EC2, ALB, Security Groups
-│   └── monitoring/      # VPC Flow Logs, S3, Athena, QuickSight, CloudWatch
-├── lambda/              # Lambda関数（Python）
-├── docs/                # ドキュメント・アーキテクチャ図
+│   ├── modules/
+│   │   ├── vpc/            # VPC, Subnets, Route Tables, IGW
+│   │   ├── compute/        # EC2, ALB, Security Groups（予定）
+│   │   └── monitoring/     # VPC Flow Logs, S3, Athena（予定）
+│   └── environments/
+│       └── dev/            # 開発環境設定
+├── lambda/                 # Lambda関数（Python）
+├── docs/                   # ドキュメント・アーキテクチャ図
 └── README.md
+```
+
+## 🏗 Infrastructure Setup
+
+### VPC Configuration
+- **VPC CIDR**: 10.0.0.0/16
+- **Region**: ap-northeast-1
+- **VPC ID**: vpc-03929123dcf05e7f3
+
+### Subnets
+
+**Public Subnets**
+- public-subnet-1a: 10.0.1.0/24 (ap-northeast-1a) - `subnet-005db386efbbfd330`
+- public-subnet-1c: 10.0.2.0/24 (ap-northeast-1c) - `subnet-0aeacf40c0c9d2d85`
+
+**Private Subnets**
+- private-subnet-1a: 10.0.11.0/24 (ap-northeast-1a) - `subnet-0d7d4720b9812e99c`
+- private-subnet-1c: 10.0.12.0/24 (ap-northeast-1c) - `subnet-098e32e7cd909e16f`
+
+### Network Components
+- **Internet Gateway**: igw-066491c60ab43148a (Attached to VPC)
+- **Route Table**: rtb-0759b8e7719c2006e (Public subnets route to IGW)
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Terraform >= 1.0
+- AWS CLI configured
+- AWS Account with appropriate permissions
+
+### Deployment
+
+```bash
+cd terraform/environments/dev
+terraform init
+terraform plan
+terraform apply
+```
+
+### DeploymentVerify Deployment
+
+```bash
+# VPC確認
+aws ec2 describe-vpcs --filters "Name=tag:Name,Values=network-visibility-vpc-dev" --output table
+
+# Subnet確認
+aws ec2 describe-subnets --filters "Name=tag:Project,Values=network-visibility" --output table
 ```
 
 ## 📚 参考資料
@@ -91,4 +141,4 @@ aws-network-visibility-dashboard/
 
 ---
 
-**Last Updated**: 2025-11-12
+**Last Updated**: 2025-11-16
