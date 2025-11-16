@@ -29,3 +29,13 @@ module "security_groups" {
   project_name = var.project_name
   environment  = var.environment
 }
+
+module "ec2" {
+  source = "../../modules/ec2"
+
+  subnet_id         = module.vpc.public_subnet_ids[0]  # 最初のPublic Subnet
+  security_group_id = module.security_groups.ec2_security_group_id
+  project_name      = var.project_name
+  environment       = var.environment
+  instance_type     = "t2.micro"
+}
