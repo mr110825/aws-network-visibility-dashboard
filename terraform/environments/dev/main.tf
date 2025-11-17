@@ -51,3 +51,16 @@ module "alb" {
   project_name = var.project_name
   environment  = var.environment
 }
+
+# VPC Flow Logs Module
+module "flow_logs" {
+  source = "../../modules/flow_logs"
+
+  vpc_id              = module.vpc.vpc_id
+  bucket_name         = "network-visibility-flow-logs-${var.environment}-${var.aws_region}"
+  traffic_type        = "ALL"
+  log_retention_days  = 30
+  project_name        = var.project_name
+  environment         = var.environment
+  common_tags         = var.common_tags
+}

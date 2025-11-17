@@ -1,6 +1,6 @@
 # AWS Network Visibility Dashboard
 
-**ステータス**: 🚧 開発中（2025年11月〜 Week 0-2: EC2/ALB完了、進捗率40%）
+**ステータス**: 🚧 開発中（2025年11月〜 Week 0-2: VPC Flow Logs設定完了、進捗率60%）
 
 ## 👤 About / このプロジェクトについて
 
@@ -65,7 +65,7 @@ AWSインフラの運用効率を向上させるツールを目指す。
 - [x] セキュリティグループ設計
 
 ### フェーズ2: 監視基盤構築
-- [ ] VPC Flow LogsのS3保存設定
+- [x] VPC Flow LogsのS3保存設定
 - [ ] Athenaクエリ環境構築（トラフィック分析）
 - [ ] Lambda関数によるログ分析自動化
 
@@ -147,6 +147,19 @@ aws-network-visibility-dashboard/
 - **Health Check**: HTTP:80 / (healthy)
 - **Access Logs**: Enabled (S3: network-visibility-alb-logs-dev-ap-northeast-1)
 
+### Monitoring & Logging
+
+**VPC Flow Logs**
+- **Flow Log ID**: fl-0fac0953b93f32a3a
+- **Status**: ACTIVE
+- **Traffic Type**: ALL (ACCEPT + REJECT)
+- **Destination**: S3 (network-visibility-flow-logs-dev-ap-northeast-1)
+- **Log Format**: Default VPC Flow Logs format
+- **Aggregation Interval**: 10 minutes
+- **Retention**: 30 days (S3 lifecycle policy)
+- **Encryption**: SSE-S3 (AES256)
+- **Data Collection Started**: 2025-11-17
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -183,6 +196,12 @@ aws elbv2 describe-target-health --target-group-arn <target-group-arn>
 
 # Webアクセステスト（ALB経由）
 curl http://network-visibility-dev-alb-596729362.ap-northeast-1.elb.amazonaws.com
+
+# VPC Flow Logs確認
+aws ec2 describe-flow-logs --filter "Name=resource-id,Values=vpc-03929123dcf05e7f3"
+
+# Flow LogsのS3バケット確認
+aws s3 ls s3://network-visibility-flow-logs-dev-ap-northeast-1/AWSLogs/ --recursive | head -10
 ```
 
 ## 📚 参考資料
@@ -193,4 +212,4 @@ curl http://network-visibility-dev-alb-596729362.ap-northeast-1.elb.amazonaws.co
 
 ---
 
-**Last Updated**: 2025-11-17 (Week 0-2: EC2/ALB構築完了)
+**Last Updated**: 2025-11-17 (Week 0-2: VPC Flow Logs設定完了、進捗率60%）

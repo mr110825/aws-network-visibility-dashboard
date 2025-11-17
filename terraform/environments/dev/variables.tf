@@ -21,3 +21,13 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
+variable "common_tags" {
+  description = "Common tags to apply to all resources"
+  type        = map(string)
+  default = {
+    Project     = "aws-network-visibility"
+    Environment = "dev"
+    ManagedBy   = "terraform"
+  }
+}
