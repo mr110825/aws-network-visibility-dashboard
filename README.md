@@ -1,6 +1,6 @@
 # AWS Network Visibility Dashboard
 
-**ステータス**: 🚧 開発中（2025年11月〜 Week 0-1: VPC基盤完了）
+**ステータス**: 🚧 開発中（2025年11月〜 Week 0-2: EC2/ALB完了、進捗率40%）
 
 ## 👤 About / このプロジェクトについて
 
@@ -27,6 +27,16 @@ AWS VPC Flow LogsとAthena、QuickSightを活用したネットワーク監視�
 ネットワークトラフィックの可視化、異常検知、Security Group分析を自動化し、
 AWSインフラの運用効率を向上させるツールを目指す。
 
+### アーキテクチャ図
+
+![Architecture Diagram](docs/diagrams/architecture-v1.0.png)
+
+**構成概要**:
+- **VPC**: 10.0.0.0/16（Public/Private Subnet × 2 AZ）
+- **ALB**: Internet-facing、Public Subnetに配置
+- **EC2**: Nginx Webサーバー、Public Subnet配置
+- **監視**: VPC Flow Logs → S3 → Athena → QuickSight（実装予定）
+
 ## 🛠 技術スタック（予定）
 
 ### 監視対象（幅広さ）
@@ -50,9 +60,9 @@ AWSインフラの運用効率を向上させるツールを目指す。
 
 ### フェーズ1: Webアプリケーション環境構築
 - [x] VPC/サブネット/ルートテーブル構築
-- [ ] EC2インスタンス構築（Nginx Webサーバー）
-- [ ] ALB（Application Load Balancer）構築
-- [ ] セキュリティグループ設計
+- [x] EC2インスタンス構築（Nginx Webサーバー）
+- [x] ALB（Application Load Balancer）構築
+- [x] セキュリティグループ設計
 
 ### フェーズ2: 監視基盤構築
 - [ ] VPC Flow LogsのS3保存設定
@@ -76,13 +86,15 @@ AWSインフラの運用効率を向上させるツールを目指す。
 aws-network-visibility-dashboard/
 ├── terraform/
 │   ├── modules/
-│   │   ├── vpc/            # VPC, Subnets, Route Tables, IGW
-│   │   ├── compute/        # EC2, ALB, Security Groups（予定）
-│   │   └── monitoring/     # VPC Flow Logs, S3, Athena（予定）
+│   │   ├── vpc/                # VPC, Subnets, Route Tables, IGW
+│   │   ├── security_groups/    # ALB/EC2 Security Groups
+│   │   ├── ec2/                # EC2 instances (Nginx)
+│   │   ├── alb/                # Application Load Balancer
+│   │   └── monitoring/         # VPC Flow Logs, S3, Athena（予定）
 │   └── environments/
-│       └── dev/            # 開発環境設定
-├── lambda/                 # Lambda関数（Python）
-├── docs/                   # ドキュメント・アーキテクチャ図
+│       └── dev/                # 開発環境設定
+├── lambda/                     # Lambda関数（Python）（予定）
+├── docs/                       # ドキュメント・アーキテクチャ図
 └── README.md
 ```
 
@@ -107,6 +119,34 @@ aws-network-visibility-dashboard/
 - **Internet Gateway**: igw-066491c60ab43148a (Attached to VPC)
 - **Route Table**: rtb-0759b8e7719c2006e (Public subnets route to IGW)
 
+### Security Groups
+
+**ALB Security Group**
+- HTTP (80): 0.0.0.0/0 → ALB
+- HTTPS (443): 0.0.0.0/0 → ALB
+
+**EC2 Security Group**
+- HTTP (80): ALB Security Group → EC2
+
+### Compute Resources
+
+**EC2 Instance**
+- **Instance ID**: i-094577d7ad08e3cdb
+- **AMI**: Amazon Linux 2023 (latest)
+- **Instance Type**: t2.micro
+- **Public IP**: 18.176.53.67
+- **Subnet**: public-subnet-1a (10.0.1.0/24)
+- **Web Server**: Nginx (auto-configured via user data)
+- **Status**: Running, serving test HTML page
+
+**Application Load Balancer**
+- **DNS Name**: network-visibility-dev-alb-596729362.ap-northeast-1.elb.amazonaws.com
+- **Scheme**: Internet-facing
+- **Subnets**: public-subnet-1a, public-subnet-1c
+- **Target Group**: EC2 instance (i-094577d7ad08e3cdb)
+- **Health Check**: HTTP:80 / (healthy)
+- **Access Logs**: Enabled (S3: network-visibility-alb-logs-dev-ap-northeast-1)
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -123,7 +163,7 @@ terraform plan
 terraform apply
 ```
 
-### DeploymentVerify Deployment
+### Verify Deployment
 
 ```bash
 # VPC確認
@@ -131,6 +171,18 @@ aws ec2 describe-vpcs --filters "Name=tag:Name,Values=network-visibility-vpc-dev
 
 # Subnet確認
 aws ec2 describe-subnets --filters "Name=tag:Project,Values=network-visibility" --output table
+
+# EC2インスタンス確認
+aws ec2 describe-instances --instance-ids i-094577d7ad08e3cdb --output table
+
+# ALB確認
+aws elbv2 describe-load-balancers --names network-visibility-dev-alb --output table
+
+# ALBターゲットヘルスチェック確認
+aws elbv2 describe-target-health --target-group-arn <target-group-arn>
+
+# Webアクセステスト（ALB経由）
+curl http://network-visibility-dev-alb-596729362.ap-northeast-1.elb.amazonaws.com
 ```
 
 ## 📚 参考資料
@@ -141,4 +193,4 @@ aws ec2 describe-subnets --filters "Name=tag:Project,Values=network-visibility" 
 
 ---
 
-**Last Updated**: 2025-11-16
+**Last Updated**: 2025-11-17 (Week 0-2: EC2/ALB構築完了)
